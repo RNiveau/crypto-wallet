@@ -4,11 +4,13 @@ import (
 	"log"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"github.com/rniveau/crypto-wallet/model"
 )
 
 const (
 	DB string = "test"
 	OperationCollection string = "operations"
+	BudgetCollection string = "budgets"
 )
 
 type ClientMongo interface { 
@@ -42,20 +44,45 @@ func (client clientMongo) getCollection(collection string) *mgo.Collection {
 	return client.getClient().DB(DB).C(collection)
 }
 
-func (client clientMongo) getOperation(id string) *interface{} {
+func (client clientMongo) _getById(id string, collection string) *interface{} {
 	if bson.IsObjectIdHex(id) {
-		var operation *interface{}
-		client.getCollection(OperationCollection).FindId(bson.ObjectIdHex(id)).One(&operation)
-		return operation
+		var value *interface{}
+		client.getCollection(collection).FindId(bson.ObjectIdHex(id)).One(&value)
+		return value
 	} else {
-		return nil		
+		return nil
 	}
+}
+
+func (client clientMongo) getOperation(id string) *model.Operation {
+	var operation *model.Operation
+	bsonM := (*(client._getById(id, OperationCollection))).(bson.M)
+	bsonBytes, _ := bson.Marshal(bsonM)
+	bson.Unmarshal(bsonBytes, &operation)
+	return operation
+}
+
+func (client clientMongo) getBudget(id string) *interface{} {
+	return client._getById(id, BudgetCollection)
 }
 
 func GetCollection(collection string) *mgo.Collection {
 	return client.getCollection(collection)
 }
 
-func GetOperation(id string) *interface{} {
+func GetOperation(id string) *model.Operation {
 	return client.getOperation(id)
+}
+
+func GetOperations() []model.Operation {
+	var values []model.Operation
+	err := client.getCollection(OperationCollection).Find(bson.M{}).All(&values)
+	if err != nil {
+		log.Println(err)
+	}
+	return values
+}
+
+func GetBudget(id string) *interface{} {
+	return client.getBudget(id)
 }
