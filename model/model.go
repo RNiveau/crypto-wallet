@@ -35,6 +35,9 @@ func (operation *Operation) Valid() error {
 	if *operation.Currency < Bitcoin || *operation.Currency >= End {
 		return errors.New("Currency is not valid")
 	}
+	if *operation.Currency != Euro && operation.BuyOrder.EuroPrice == 0 {
+		return errors.New("EuroPrice can't be empty in crypto currency order")
+	}
 	return nil
 }
 
