@@ -2,7 +2,7 @@ package client
 
 import (
 	"log"
-	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"github.com/rniveau/crypto-wallet/model"
 )
@@ -85,4 +85,14 @@ func GetOperations() []model.Operation {
 
 func GetBudget(id string) *interface{} {
 	return client.getBudget(id)
+}
+
+func GetBudgetByCurrency(currency model.Currency) *model.Budget {
+	var budget *model.Budget
+	client.getCollection(BudgetCollection).Find(bson.M{"currency": currency}).One(&budget)
+	return budget
+}
+
+func UpsertBudget(budget *model.Budget) {
+	client.getCollection(BudgetCollection).Upsert(bson.M{}, budget)
 }

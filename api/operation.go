@@ -43,5 +43,12 @@ func CreateOperation(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 	client.GetCollection(client.OperationCollection).Insert(operation)
+	budget := client.GetBudgetByCurrency(*operation.Currency)
+	if budget == nil {
+		budget = &model.Budget{Currency: operation.Currency, Total: float64(0)}
+	}
+	budget.Total += operation.BuyOrder.TotalPrice
+	client.UpsertBudget(budget)
+	log.Println(budget)
 	log.Println(operation.Id)
 }
