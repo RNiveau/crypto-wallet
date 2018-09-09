@@ -37,6 +37,9 @@ func CreateOperation(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 	operation.Id = bson.NewObjectId()
+	if operation.ParentId != "" {
+       operation.Parent = client.GetOperation(operation.ParentId)
+	}
 	if err = operation.Valid(); err != nil {
 		response.WriteHeader(http.StatusBadRequest)
 		io.WriteString(response, err.Error())

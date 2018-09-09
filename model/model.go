@@ -5,8 +5,6 @@ import (
 	"log"
 	"time"
 	"gopkg.in/mgo.v2/bson"
-
-	"github.com/rniveau/crypto-wallet/client"
 )
 
 type Currency int
@@ -40,11 +38,23 @@ func (operation *Operation) Valid() error {
 		return errors.New("Currency is not valid")
 	}
 	if operation.ParentId != "" {
-           parent := client.GetOperation(operation.ParentId)
-           log.Println(parent)
-           if parent == nil {
+           log.Println(operation.Parent)
+           if operation.Parent == nil {
            	return errors.New("ParentId doesn't exist")
            }
+    }
+    if operation.BuyOrder == nil && operation.SellOrder == nil {
+        return errors.New("You need an order in an operation")
+    }
+    if operation.BuyOrder != nil {
+    	if err := operation.BuyOrder.Valid(); err != nil {
+    		return err
+    	}
+    }
+    if operation.SellOrder != nil {
+    	if err := operation.SellOrder.Valid(); err != nil {
+    		return err
+    	}
     }
     return nil
 }

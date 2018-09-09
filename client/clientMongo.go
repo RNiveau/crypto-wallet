@@ -56,8 +56,16 @@ func (client clientMongo) _getById(id string, collection string) *interface{} {
 
 func (client clientMongo) getOperation(id string) *model.Operation {
 	var operation *model.Operation
-	bsonM := (*(client._getById(id, OperationCollection))).(bson.M)
-	bsonBytes, _ := bson.Marshal(bsonM)
+	interf := client._getById(id, OperationCollection)
+	if interf == nil {
+		return nil
+	}
+	bsonM := (*(interf)).(bson.M)
+	bsonBytes, err := bson.Marshal(bsonM)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
 	bson.Unmarshal(bsonBytes, &operation)
 	return operation
 }
