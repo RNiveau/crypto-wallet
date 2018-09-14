@@ -102,5 +102,7 @@ func GetBudgetByCurrency(currency model.Currency) *model.Budget {
 }
 
 func UpsertBudget(budget *model.Budget) {
-	client.getCollection(BudgetCollection).Upsert(bson.M{}, budget)
+	if _, err := client.getCollection(BudgetCollection).Upsert(bson.M{}, budget); err != nil {
+		log.Println(err)
+	}
 }

@@ -60,8 +60,8 @@ func (operation *Operation) Valid() error {
 }
 
 type Order struct {
-	TotalPrice float64   `json:"total_price"`
-	UnitPrice  float64   `json:"unit_price"`
+	Quantity   float64   `json:"quantity"`
+	Price	   float64   `json:"price"`
 	EuroPrice  float64   `json:"euro_price"`
 	Currency   *Currency `json:"currency"`
 	Date       time.Time `json:"date"`
@@ -73,16 +73,15 @@ func (order *Order) Valid() error {
 	}
 	if *order.Currency < Bitcoin || *order.Currency >= End {
 		return errors.New("Currency is not valid")
-	}	
+	}
 	return nil
 }
 
-
-
 type Budget struct {
-	Id       bson.ObjectId `json:"id" bson:"_id,omitempty"`
-	Currency *Currency     `json:"currency"`
-	Total    float64       `json:"total"`
+	Id       	bson.ObjectId `json:"id" bson:"_id,omitempty"`
+	Currency 	*Currency     `json:"currency"`
+	Total    	float64       `json:"total"`
+	Available   float64       `json:"available"`
 }
 
 const (

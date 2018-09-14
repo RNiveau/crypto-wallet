@@ -11,6 +11,7 @@ import (
 
 	"github.com/rniveau/crypto-wallet/model"
 	"github.com/rniveau/crypto-wallet/client"
+	"github.com/rniveau/crypto-wallet/utils"
 )
 
 func GetOperation(response http.ResponseWriter, request *http.Request) {
@@ -38,20 +39,49 @@ func CreateOperation(response http.ResponseWriter, request *http.Request) {
 	}
 	operation.Id = bson.NewObjectId()
 	if operation.ParentId != "" {
-       operation.Parent = client.GetOperation(operation.ParentId)
+		operation.Parent = client.GetOperation(operation.ParentId)
 	}
 	if err = operation.Valid(); err != nil {
 		response.WriteHeader(http.StatusBadRequest)
 		io.WriteString(response, err.Error())
 		return
 	}
-	client.GetCollection(client.OperationCollection).Insert(operation)
+	order := utils.GetOrderFromOperation(&operation)
 	budget := client.GetBudgetByCurrency(*operation.Currency)
 	if budget == nil {
 		budget = &model.Budget{Currency: operation.Currency, Total: float64(0)}
 	}
-	budget.Total += operation.BuyOrder.TotalPrice
+	if *order.Currency != model.Euro {
+		euroBudget := utils.GetEuroBudget()
+		if operation.BuyOrder != nil {
+			if euroBudget.Available - order.EuroPrice < 0 {
+				response.WriteHeader(http.StatusBadRequest)
+				io.WriteString(response, "No enough euro budget")
+				return
+			}
+			euroBudget.Available -= order.EuroPrice
+		} else {
+			euroBudget.Available += order.EuroPrice
+		}
+		client.UpsertBudget(euroBudget)
+	}
+	if operation.BuyOrder != nil {
+		budget.Total += operation.Quantity
+		budget.Available += operation.Quantity
+		currencyBudget := client.GetBudgetByCurrency(*operation.BuyOrder.Currency)
+		if currencyBudget == nil {
+			currencyBudget = &model.Budget{Currency: operation.BuyOrder.Currency, Total: float64(0)}
+		}
+		if currencyBudget.Available - order.Price < 0 {
+			response.WriteHeader(http.StatusBadRequest)
+			io.WriteString(response, "No enough currency budget")
+			return
+		}
+		currencyBudget.Available -= order.Price
+		client.UpsertBudget(currencyBudget)
+	} else {
+
+	}
 	client.UpsertBudget(budget)
-	log.Println(budget)
-	log.Println(operation.Id)
+	client.GetCollection(client.OperationCollection).Insert(operation)
 }
