@@ -44,3 +44,9 @@ Get one operation:
 ```
 curl localhost:8080/api/operation/{id}
 ```
+
+Get crypto internal code:
+
+```
+curl localhost:8080/api/cryptos
+```

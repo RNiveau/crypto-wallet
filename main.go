@@ -22,6 +22,7 @@ func main() {
     router.HandleFunc("/api/operation/{id}", api.GetOperation).Methods("GET")
     router.HandleFunc("/api/operation", api.CreateOperation).Methods("POST")
     router.HandleFunc("/api/operations", api.GetOperations).Methods("GET")
+    router.HandleFunc("/api/cryptos", api.GetCryptos).Methods("GET")
 	err := http.ListenAndServe(":8080", router)
 	if err != nil {
 		log.Fatalln("Error to start http", err)
