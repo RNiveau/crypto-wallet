@@ -25,9 +25,6 @@ type Operation struct {
 }
 
 func (operation *Operation) Valid() error {
-	if operation.BuyOrder == nil {
-		return errors.New("BuyOrder can't be nil")
-	}
 	if operation.Quantity <= 0 {
 		return errors.New("Quantity must be more than 0")
 	}
@@ -60,7 +57,6 @@ func (operation *Operation) Valid() error {
 }
 
 type Order struct {
-	Quantity   float64   `json:"quantity"`
 	Price	   float64   `json:"price"`
 	EuroPrice  float64   `json:"euro_price"`
 	Currency   *Currency `json:"currency"`
@@ -73,6 +69,9 @@ func (order *Order) Valid() error {
 	}
 	if *order.Currency < Bitcoin || *order.Currency >= End {
 		return errors.New("Currency is not valid")
+	}
+	if *order.Currency != Euro && order.EuroPrice <= 0{
+		return errors.New("Euro price must be filled")
 	}
 	return nil
 }
@@ -88,5 +87,7 @@ const (
 	Bitcoin Currency = iota + 1
 	Euro
 	Ether
+	Ripple
+	IOST
 	End
 )

@@ -101,8 +101,20 @@ func GetBudgetByCurrency(currency model.Currency) *model.Budget {
 	return budget
 }
 
+func GetOrCreateBudget(currency *model.Currency) *model.Budget {
+	currencyBudget := GetBudgetByCurrency(*currency)
+	if currencyBudget == nil {
+		currencyBudget = &model.Budget{Currency: currency, Total: float64(0)}
+	}
+	return currencyBudget
+}
+
 func UpsertBudget(budget *model.Budget) {
-	if _, err := client.getCollection(BudgetCollection).Upsert(bson.M{}, budget); err != nil {
+	if !bson.IsObjectIdHex(budget.Id.Hex()) {
+		budget.Id = bson.NewObjectId()
+	}
+	selector := bson.M{"_id": budget.Id}
+	if _, err := client.getCollection(BudgetCollection).Upsert(selector, budget); err != nil {
 		log.Println(err)
 	}
 }
