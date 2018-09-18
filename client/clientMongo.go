@@ -91,8 +91,10 @@ func GetOperations() []model.Operation {
 	return values
 }
 
-func GetBudget(id string) *interface{} {
-	return client.getBudget(id)
+func GetBudgets() []model.Budget {
+	var values []model.Budget
+	client.getCollection(BudgetCollection).Find(bson.M{}).All(&values)
+	return values
 }
 
 func GetBudgetByCurrency(currency model.Currency) *model.Budget {

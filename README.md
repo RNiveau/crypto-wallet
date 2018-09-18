@@ -50,3 +50,17 @@ Get crypto internal code:
 ```
 curl localhost:8080/api/cryptos
 ```
+
+Get budgets:
+
+```
+curl localhost:8080/api/budgets
+
+curl localhost:8080/api/budget/2
+```
+
+Add euro:
+
+```
+curl localhost:8080/api/budget/euro/-10 -X POST
+```

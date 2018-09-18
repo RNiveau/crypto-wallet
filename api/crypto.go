@@ -14,6 +14,4 @@ func GetCryptos(response http.ResponseWriter, request *http.Request) {
 	maps["ripple"] = model.Ripple
 	maps["iost"] = model.IOST
 	json.NewEncoder(response).Encode(maps)
-
-
 }
