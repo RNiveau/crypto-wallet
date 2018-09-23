@@ -2,9 +2,8 @@ package model
 
 import (
 	"errors"
-	"log"
-	"time"
 	"gopkg.in/mgo.v2/bson"
+	"log"
 )
 
 type Currency int
@@ -57,10 +56,10 @@ func (operation *Operation) Valid() error {
 }
 
 type Order struct {
-	Price	   float64   `json:"price"`
-	EuroPrice  float64   `json:"euro_price"`
-	Currency   *Currency `json:"currency"`
-	Date       time.Time `json:"date"`
+	Price     float64    `json:"price"`
+	EuroPrice float64    `json:"euro_price"`
+	Currency  *Currency  `json:"currency"`
+	Date      customTime `json:"date"`
 }
 
 func (order *Order) Valid() error {
@@ -70,7 +69,7 @@ func (order *Order) Valid() error {
 	if *order.Currency < Bitcoin || *order.Currency >= End {
 		return errors.New("Currency is not valid")
 	}
-	if *order.Currency != Euro && order.EuroPrice <= 0{
+	if *order.Currency != Euro && order.EuroPrice <= 0 {
 		return errors.New("Euro price must be filled")
 	}
 	return nil

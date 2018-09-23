@@ -9,7 +9,7 @@ Create operation:
 
 ```
 curl localhost:8080/api/operation -X POST -d '{"quantity": 1, "currency": 1, "description": "", 
-"buy_order": {"total_price": 1, "price": 1, "euro_price": 1, "date": "", "currency": 1}, 
+"buy_order": {"price": 1, "euro_price": 1, "date": "YYY-MM-DD", "currency": 1}, 
 "parent_id": "5b82cf8dc15df939fb776bce" }'
 ```
 
