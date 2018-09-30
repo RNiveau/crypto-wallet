@@ -48,8 +48,9 @@ func CreateOperation(response http.ResponseWriter, request *http.Request) {
 	}
 	order := utils.GetOrderFromOperation(&operation)
 	budget := client.GetOrCreateBudget(operation.Currency)
+	var euroBudget *model.Budget
 	if *order.Currency != model.Euro {
-		euroBudget := utils.GetEuroBudget()
+		euroBudget = utils.GetEuroBudget()
 		if operation.BuyOrder != nil {
 			if euroBudget.Available - order.EuroPrice < 0 {
 				response.WriteHeader(http.StatusBadRequest)
@@ -59,8 +60,10 @@ func CreateOperation(response http.ResponseWriter, request *http.Request) {
 			euroBudget.Available -= order.EuroPrice
 		} else {
 			euroBudget.Available += order.EuroPrice
+			if euroBudget.Available > euroBudget.Total {
+				euroBudget.Total = euroBudget.Available
+			}
 		}
-		client.UpsertBudget(euroBudget)
 	}
 	if operation.BuyOrder != nil {
 		budget.Total += operation.Quantity
@@ -82,6 +85,9 @@ func CreateOperation(response http.ResponseWriter, request *http.Request) {
 			currencyBudget.Total = currencyBudget.Available
 		}
 		client.UpsertBudget(currencyBudget)
+	}
+	if euroBudget != nil {
+		client.UpsertBudget(euroBudget)
 	}
 	client.UpsertBudget(budget)
 	client.GetCollection(client.OperationCollection).Insert(operation)

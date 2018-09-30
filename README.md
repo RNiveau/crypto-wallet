@@ -23,7 +23,7 @@ curl localhost:8080/api/operation -X POST -d '{"quantity": 1, "currency": 1, "de
 
 ```
 curl localhost:8080/api/operation -X POST -d '{"quantity": 2, "currency": 1, "description": "",
-"buy_order": {"price": 3 , "currency": 3, "euro_price": 0.5}}'
+"buy_order": {"price": 3 , "currency": 3, "euro_price": 0.5, "date": "2018-01-20"}}'
 ```
 
 * Sell ether:
