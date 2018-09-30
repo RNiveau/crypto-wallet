@@ -42,5 +42,11 @@ func AddEuro(response http.ResponseWriter, request *http.Request) {
 	}
 	budget.Available += money
 	budget.Total += money
+	transaction := model.Transaction{Total: money, Date: model.Now()}
+	if budget.Transactions == nil {
+		budget.Transactions = &[]model.Transaction{}
+	}
+	transactions := append(*budget.Transactions, transaction)
+	budget.Transactions = &transactions
 	client.UpsertBudget(budget)
 }

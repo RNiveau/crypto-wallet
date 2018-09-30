@@ -20,3 +20,7 @@ func (t *customTime) UnmarshalJSON(buf []byte) error {
 func (t customTime) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + t.Time.Format("2006-01-01") + `"`), nil
 }
+
+func Now() customTime {
+	return customTime{Time: time.Now()}
+}

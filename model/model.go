@@ -76,10 +76,16 @@ func (order *Order) Valid() error {
 }
 
 type Budget struct {
-	Id       	bson.ObjectId `json:"id" bson:"_id,omitempty"`
-	Currency 	*Currency     `json:"currency"`
-	Total    	float64       `json:"total"`
-	Available   float64       `json:"available"`
+	Id       		bson.ObjectId 	`json:"id" bson:"_id,omitempty"`
+	Currency 		*Currency     	`json:"currency"`
+	Total    		float64       	`json:"total"`
+	Available   	float64       	`json:"available"`
+	Transactions 	*[]Transaction	`json:"transactions"`
+}
+
+type Transaction struct {
+	Date  customTime `json:"date"`
+	Total float64    `json:"total"`
 }
 
 const (
