@@ -82,6 +82,15 @@ func GetOperation(id string) *model.Operation {
 	return client.getOperation(id)
 }
 
+func GetChildrenOperation(parentId string) *[]model.Operation {
+	var values []model.Operation
+	err := client.getCollection(OperationCollection).Find(bson.M{"parentid": parentId}).All(&values)
+	if err != nil {
+		log.Println(err)
+	}
+	return &values
+}
+
 func GetOperations() []model.Operation {
 	var values []model.Operation
 	err := client.getCollection(OperationCollection).Find(bson.M{}).All(&values)

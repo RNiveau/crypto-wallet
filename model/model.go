@@ -20,7 +20,8 @@ type Operation struct {
 	Currency    *Currency     `json:"currency"`
 	Description string        `json:"description"`
 	ParentId	string		  `json:"parent_id" bson:",omitempty"`
-	Parent 		*Operation 	  `json:"parent" bson:"-"`
+	Parent 		*Operation 	  `json:"parent,omitempty" bson:"-"`
+	Children	*[]Operation  `json:"children,omitempty" bson:"-"`
 }
 
 func (operation *Operation) Valid() error {

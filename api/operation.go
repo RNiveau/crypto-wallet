@@ -18,6 +18,7 @@ func GetOperation(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(request)
 	operation := client.GetOperation(params["id"])
+	operation.Children = client.GetChildrenOperation(params["id"])
 	json.NewEncoder(response).Encode(*operation)
 }
 
