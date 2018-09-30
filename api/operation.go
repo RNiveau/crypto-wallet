@@ -61,6 +61,11 @@ func CreateOperation(response http.ResponseWriter, request *http.Request) {
 		} else {
 			euroBudget.Available += order.EuroPrice
 			if euroBudget.Available > euroBudget.Total {
+				if euroBudget.Transactions == nil {
+					euroBudget.Transactions = &[]model.Transaction{}
+				}
+				transactions := append(*euroBudget.Transactions, model.Transaction{Date: model.Now(), Total: euroBudget.Available - euroBudget.Total})
+				euroBudget.Transactions = &transactions
 				euroBudget.Total = euroBudget.Available
 			}
 		}
@@ -82,6 +87,13 @@ func CreateOperation(response http.ResponseWriter, request *http.Request) {
 		currencyBudget := client.GetOrCreateBudget(operation.SellOrder.Currency)
 		currencyBudget.Available += order.Price
 		if currencyBudget.Available > currencyBudget.Total {
+			if *currencyBudget.Currency == model.Euro {
+				if currencyBudget.Transactions == nil {
+					currencyBudget.Transactions = &[]model.Transaction{}
+				}
+				transactions := append(*currencyBudget.Transactions, model.Transaction{Date: model.Now(), Total: currencyBudget.Available - currencyBudget.Total})
+				currencyBudget.Transactions = &transactions
+			}
 			currencyBudget.Total = currencyBudget.Available
 		}
 		client.UpsertBudget(currencyBudget)
