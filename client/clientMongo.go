@@ -1,10 +1,10 @@
 package client 
 
 import (
-	"log"
+	"github.com/rniveau/crypto-wallet/model"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"github.com/rniveau/crypto-wallet/model"
+	"log"
 )
 
 const (
@@ -15,7 +15,7 @@ const (
 
 type ClientMongo interface { 
 	GetSession() *mgo.Session
-	GetOperation() *interface{}
+	GetOperation(id string) *model.Operation
 	GetCollection(collection string) *mgo.Collection
 	UpsertBudget(budget *model.Budget)
 	GetChildrenOperation(parentId string) *[]model.Operation
@@ -35,7 +35,7 @@ var (
 	client = &clientMongo{}
 )
 
-func GetClient() *clientMongo {
+func GetClient() ClientMongo {
 	return client
 }
 
@@ -47,7 +47,7 @@ func (c clientMongo) getSession() *mgo.Session  {
 	return c.session
 }
 
-func GetSession() *mgo.Session {
+func (client clientMongo) GetSession() *mgo.Session {
 	return client.getSession()
 }
 
