@@ -1,13 +1,12 @@
 package api
 
 import (
-	"net/http"
-	"github.com/rniveau/crypto-wallet/client"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/rniveau/crypto-wallet/model"
-	"strconv"
 	"io"
+	"net/http"
+	"strconv"
 )
 
 func GetBudgetFromCurrency(response http.ResponseWriter, request *http.Request) {
@@ -18,11 +17,11 @@ func GetBudgetFromCurrency(response http.ResponseWriter, request *http.Request) 
 		io.WriteString(response, "Bad currency")
 		return
 	}
-	json.NewEncoder(response).Encode(client.GetBudgetByCurrency(model.Currency(currency)))
+	json.NewEncoder(response).Encode(clientMongo.GetBudgetByCurrency(model.Currency(currency)))
 }
 
 func GetBudgets(response http.ResponseWriter, _ *http.Request) {
-	json.NewEncoder(response).Encode(client.GetBudgets())
+	json.NewEncoder(response).Encode(clientMongo.GetBudgets())
 }
 
 func AddEuro(response http.ResponseWriter, request *http.Request) {
@@ -34,7 +33,7 @@ func AddEuro(response http.ResponseWriter, request *http.Request) {
 		io.WriteString(response, "Bad money")
 		return
 	}
-	budget := client.GetOrCreateBudget(&currency)
+	budget := clientMongo.GetOrCreateBudget(&currency)
 	if money < 0 && budget.Available + money < 0 {
 		response.WriteHeader(http.StatusBadRequest)
 		io.WriteString(response, "Can't subtract this money from current budget")
@@ -48,5 +47,5 @@ func AddEuro(response http.ResponseWriter, request *http.Request) {
 	}
 	transactions := append(*budget.Transactions, transaction)
 	budget.Transactions = &transactions
-	client.UpsertBudget(budget)
+	clientMongo.UpsertBudget(budget)
 }

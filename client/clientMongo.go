@@ -16,6 +16,13 @@ const (
 type ClientMongo interface { 
 	GetSession() *mgo.Session
 	GetOperation() *interface{}
+	GetCollection(collection string) *mgo.Collection
+	UpsertBudget(budget *model.Budget)
+	GetChildrenOperation(parentId string) *[]model.Operation
+	GetOperations() []model.Operation
+	GetBudgets() []model.Budget
+	GetBudgetByCurrency(currency model.Currency) *model.Budget
+	GetOrCreateBudget(currency *model.Currency) *model.Budget
 }
 
 type clientMongo struct {
@@ -25,10 +32,14 @@ type clientMongo struct {
 }
 
 var (
-	client *clientMongo = &clientMongo{}
+	client = &clientMongo{}
 )
 
-func (c clientMongo) getClient() *mgo.Session  {
+func GetClient() *clientMongo {
+	return client
+}
+
+func (c clientMongo) getSession() *mgo.Session  {
 	if c.session == nil {
 		log.Println("Init session mongodb")
 		c.session, _ = mgo.Dial("localhost")
@@ -37,11 +48,11 @@ func (c clientMongo) getClient() *mgo.Session  {
 }
 
 func GetSession() *mgo.Session {
-	return client.getClient()
+	return client.getSession()
 }
 
 func (client clientMongo) getCollection(collection string) *mgo.Collection {
-	return client.getClient().DB(DB).C(collection)
+	return client.getSession().DB(DB).C(collection)
 }
 
 func (client clientMongo) _getById(id string, collection string) *interface{} {
@@ -74,15 +85,15 @@ func (client clientMongo) getBudget(id string) *interface{} {
 	return client._getById(id, BudgetCollection)
 }
 
-func GetCollection(collection string) *mgo.Collection {
+func (client clientMongo) GetCollection(collection string) *mgo.Collection {
 	return client.getCollection(collection)
 }
 
-func GetOperation(id string) *model.Operation {
+func (client clientMongo) GetOperation(id string) *model.Operation {
 	return client.getOperation(id)
 }
 
-func GetChildrenOperation(parentId string) *[]model.Operation {
+func (client clientMongo) GetChildrenOperation(parentId string) *[]model.Operation {
 	var values []model.Operation
 	err := client.getCollection(OperationCollection).Find(bson.M{"parentid": parentId}).All(&values)
 	if err != nil {
@@ -91,7 +102,7 @@ func GetChildrenOperation(parentId string) *[]model.Operation {
 	return &values
 }
 
-func GetOperations() []model.Operation {
+func (client clientMongo) GetOperations() []model.Operation {
 	var values []model.Operation
 	err := client.getCollection(OperationCollection).Find(bson.M{}).All(&values)
 	if err != nil {
@@ -100,27 +111,27 @@ func GetOperations() []model.Operation {
 	return values
 }
 
-func GetBudgets() []model.Budget {
+func (client clientMongo) GetBudgets() []model.Budget {
 	var values []model.Budget
 	client.getCollection(BudgetCollection).Find(bson.M{}).All(&values)
 	return values
 }
 
-func GetBudgetByCurrency(currency model.Currency) *model.Budget {
+func (client clientMongo) GetBudgetByCurrency(currency model.Currency) *model.Budget {
 	var budget *model.Budget
 	client.getCollection(BudgetCollection).Find(bson.M{"currency": currency}).One(&budget)
 	return budget
 }
 
-func GetOrCreateBudget(currency *model.Currency) *model.Budget {
-	currencyBudget := GetBudgetByCurrency(*currency)
+func (client clientMongo) GetOrCreateBudget(currency *model.Currency) *model.Budget {
+	currencyBudget := client.GetBudgetByCurrency(*currency)
 	if currencyBudget == nil {
 		currencyBudget = &model.Budget{Currency: currency, Total: float64(0)}
 	}
 	return currencyBudget
 }
 
-func UpsertBudget(budget *model.Budget) {
+func (client clientMongo) UpsertBudget(budget *model.Budget) {
 	if !bson.IsObjectIdHex(budget.Id.Hex()) {
 		budget.Id = bson.NewObjectId()
 	}

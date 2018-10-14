@@ -5,8 +5,10 @@ import (
 	"github.com/rniveau/crypto-wallet/model"
 )
 
+var clientMongo = client.GetClient()
+
 func GetEuroBudget() *model.Budget {
-	euroBudget := client.GetBudgetByCurrency(model.Euro)
+	euroBudget := clientMongo.GetBudgetByCurrency(model.Euro)
 	if euroBudget == nil {
 		euro := model.Euro
 		euroBudget = &model.Budget{Currency: &euro, Total: float64(0)}
