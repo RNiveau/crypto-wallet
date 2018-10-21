@@ -105,5 +105,5 @@ func CreateOperation(response http.ResponseWriter, request *http.Request) {
 		clientMongo.UpsertBudget(euroBudget)
 	}
 	clientMongo.UpsertBudget(budget)
-	clientMongo.GetCollection(client.OperationCollection).Insert(operation)
+	clientMongo.InsertOperation(&operation)
 }

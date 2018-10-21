@@ -23,6 +23,7 @@ type ClientMongo interface {
 	GetBudgets() []model.Budget
 	GetBudgetByCurrency(currency model.Currency) *model.Budget
 	GetOrCreateBudget(currency *model.Currency) *model.Budget
+	InsertOperation(operation *model.Operation)
 }
 
 type clientMongo struct {
@@ -129,6 +130,10 @@ func (client clientMongo) GetOrCreateBudget(currency *model.Currency) *model.Bud
 		currencyBudget = &model.Budget{Currency: currency, Total: float64(0)}
 	}
 	return currencyBudget
+}
+
+func (client clientMongo) InsertOperation(operation *model.Operation) {
+	client.GetCollection(OperationCollection).Insert(operation)
 }
 
 func (client clientMongo) UpsertBudget(budget *model.Budget) {
