@@ -72,4 +72,47 @@ func TestCreateBuyOperationBitcoinFromEuro(test *testing.T) {
 	assert.Equal(test, float64(9), euroBudget.Available)
 	assert.Equal(test, float64(1), bitcoinBudget.Available)
 	assert.Equal(test, float64(1), bitcoinBudget.Total)
+	assert.Equal(test, http.StatusCreated, writer.Code)
+}
+
+func TestCreateBuyOperationBitcoinFromEuroWithoutEnougthBudget(test *testing.T) {
+	str := "{\"quantity\": 2, \"currency\": 1, \"description\": \"\", \"buy_order\": {\"price\": 12, \"euro_price\": 12,  \"currency\": 2}}"
+
+	request, _ := http.NewRequest("POST", "test", strings.NewReader(str))
+	writer := httptest.NewRecorder()
+	clientMongo = &mockMongo
+	currency := model.Euro
+	euroBudget := model.Budget{Currency: &currency, Total: 10, Available: 10}
+	mockMongo.euroBudget = &euroBudget
+	bitcoin := model.Bitcoin
+	bitcoinBudget := model.Budget{Currency: &bitcoin, Total: 0, Available: 0}
+	mockMongo.budget = &bitcoinBudget
+	CreateOperation(writer, request)
+	assert.Equal(test, float64(10), euroBudget.Available)
+	assert.Equal(test, float64(10), euroBudget.Total)
+	assert.Equal(test, float64(0), bitcoinBudget.Available)
+	assert.Equal(test, float64(0), bitcoinBudget.Total)
+	assert.Equal(test, http.StatusBadRequest, writer.Code)
+}
+
+func TestCreateSellOperationBitcoinFromEuro(test *testing.T) {
+	str := "{\"quantity\": 1, \"currency\": 1, \"description\": \"\", \"sell_order\": {\"price\": 1, \"euro_price\": 1,  \"currency\": 2}}"
+
+	request, _ := http.NewRequest("POST", "test", strings.NewReader(str))
+	writer := httptest.NewRecorder()
+	clientMongo = &mockMongo
+	currency := model.Euro
+	euroBudget := model.Budget{Currency: &currency, Total: 10, Available: 10}
+	mockMongo.euroBudget = &euroBudget
+	bitcoin := model.Bitcoin
+	bitcoinBudget := model.Budget{Currency: &bitcoin, Total: 5, Available: 5}
+	mockMongo.budget = &bitcoinBudget
+	CreateOperation(writer, request)
+	assert.Equal(test, float64(11), euroBudget.Available)
+	assert.Equal(test, float64(11), euroBudget.Total)
+	assert.Equal(test, 1, len(*euroBudget.Transactions))
+	assert.Equal(test, float64(1), (*euroBudget.Transactions)[0].Total)
+	assert.Equal(test, float64(4), bitcoinBudget.Available)
+	assert.Equal(test, float64(4), bitcoinBudget.Total)
+	assert.Equal(test, http.StatusCreated, writer.Code)
 }

@@ -1,16 +1,16 @@
 package api
 
 import (
+	"encoding/json"
 	"io"
 	"log"
-	"encoding/json"
 	"net/http"
 
-	"gopkg.in/mgo.v2/bson"
 	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2/bson"
 
-	"github.com/rniveau/crypto-wallet/model"
 	"github.com/rniveau/crypto-wallet/client"
+	"github.com/rniveau/crypto-wallet/model"
 	"github.com/rniveau/crypto-wallet/utils"
 )
 
@@ -51,37 +51,15 @@ func CreateOperation(response http.ResponseWriter, request *http.Request) {
 	}
 	order := utils.GetOrderFromOperation(&operation)
 	budget := clientMongo.GetOrCreateBudget(operation.Currency)
-	var euroBudget *model.Budget
-	if *order.Currency != model.Euro {
-		euroBudget = utils.GetEuroBudget()
-		if operation.BuyOrder != nil {
-			if euroBudget.Available - order.EuroPrice < 0 {
-				response.WriteHeader(http.StatusBadRequest)
-				io.WriteString(response, "No enough euro budget")
-				return
-			}
-			euroBudget.Available -= order.EuroPrice
-		} else {
-			euroBudget.Available += order.EuroPrice
-			if euroBudget.Available > euroBudget.Total {
-				if euroBudget.Transactions == nil {
-					euroBudget.Transactions = &[]model.Transaction{}
-				}
-				transactions := append(*euroBudget.Transactions, model.Transaction{Date: model.Now(), Total: euroBudget.Available - euroBudget.Total})
-				euroBudget.Transactions = &transactions
-				euroBudget.Total = euroBudget.Available
-			}
-		}
-	}
 	if operation.BuyOrder != nil {
-		budget.Total += operation.Quantity
-		budget.Available += operation.Quantity
 		currencyBudget := clientMongo.GetOrCreateBudget(operation.BuyOrder.Currency)
 		if currencyBudget.Available - order.Price < 0 {
 			response.WriteHeader(http.StatusBadRequest)
 			io.WriteString(response, "No enough currency budget")
 			return
 		}
+		budget.Total += operation.Quantity
+		budget.Available += operation.Quantity
 		currencyBudget.Available -= order.Price
 		clientMongo.UpsertBudget(currencyBudget)
 	} else {
@@ -101,9 +79,7 @@ func CreateOperation(response http.ResponseWriter, request *http.Request) {
 		}
 		clientMongo.UpsertBudget(currencyBudget)
 	}
-	if euroBudget != nil {
-		clientMongo.UpsertBudget(euroBudget)
-	}
 	clientMongo.UpsertBudget(budget)
 	clientMongo.InsertOperation(&operation)
+	response.WriteHeader(http.StatusCreated)
 }
