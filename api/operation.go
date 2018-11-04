@@ -82,4 +82,5 @@ func CreateOperation(response http.ResponseWriter, request *http.Request) {
 	clientMongo.UpsertBudget(budget)
 	clientMongo.InsertOperation(&operation)
 	response.WriteHeader(http.StatusCreated)
+	json.NewEncoder(response).Encode(operation)
 }
