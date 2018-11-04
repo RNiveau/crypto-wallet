@@ -2,6 +2,15 @@
 
 This project aims to provide an api a own wallet to follow purchase and sale of crypto currency.
 
+Useful infos:
+-------------
+
+Price show full price for an operation.
+Ex:
+- 100 for quantity 2 means 1 unit is equal to 50
+- 100 for quantity 0.5 means 1 unit is equal to 200
+
+
 Operation API:
 --------------
 
