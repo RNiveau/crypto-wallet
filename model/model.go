@@ -52,6 +52,9 @@ func (operation *Operation) Valid() error {
     	if err := operation.SellOrder.Valid(); err != nil {
     		return err
     	}
+    	if operation.ParentId == "" {
+			return errors.New("A sell order must have a reference to a parent")
+		}
     }
     return nil
 }

@@ -53,7 +53,7 @@ func CreateOperation(response http.ResponseWriter, request *http.Request) {
 	budget := clientMongo.GetOrCreateBudget(operation.Currency)
 	if operation.BuyOrder != nil {
 		currencyBudget := clientMongo.GetOrCreateBudget(operation.BuyOrder.Currency)
-		if currencyBudget.Available - order.Price < 0 {
+		if currencyBudget.Available-order.Price < 0 {
 			response.WriteHeader(http.StatusBadRequest)
 			io.WriteString(response, "No enough currency budget")
 			return
@@ -63,6 +63,19 @@ func CreateOperation(response http.ResponseWriter, request *http.Request) {
 		currencyBudget.Available -= order.Price
 		clientMongo.UpsertBudget(currencyBudget)
 	} else {
+		parentOperation := clientMongo.GetOperation(operation.ParentId)
+		parentOperation.Children = clientMongo.GetChildrenOperation(operation.ParentId)
+		alreadySold := float64(0)
+		if parentOperation.Children != nil {
+			for _, sell := range *parentOperation.Children {
+				alreadySold += sell.Quantity
+			}
+		}
+		if alreadySold + operation.Quantity > parentOperation.Quantity {
+			response.WriteHeader(http.StatusBadRequest)
+			io.WriteString(response, "You can't sell more than the quantity bought")
+			return
+		}
 		budget.Total -= operation.Quantity
 		budget.Available -= operation.Quantity
 		currencyBudget := clientMongo.GetOrCreateBudget(operation.SellOrder.Currency)
