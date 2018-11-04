@@ -2,8 +2,8 @@ package client
 
 import (
 	"github.com/rniveau/crypto-wallet/model"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 	"log"
 )
 
@@ -133,7 +133,9 @@ func (client clientMongo) GetOrCreateBudget(currency *model.Currency) *model.Bud
 }
 
 func (client clientMongo) InsertOperation(operation *model.Operation) {
-	client.GetCollection(OperationCollection).Insert(operation)
+	if err := client.GetCollection(OperationCollection).Insert(operation); err != nil {
+		log.Println(err)
+	}
 }
 
 func (client clientMongo) UpsertBudget(budget *model.Budget) {

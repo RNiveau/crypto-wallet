@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/globalsign/mgo/bson"
 
 	"github.com/rniveau/crypto-wallet/client"
 	"github.com/rniveau/crypto-wallet/model"
@@ -21,6 +21,18 @@ func GetOperation(response http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	operation := clientMongo.GetOperation(params["id"])
 	operation.Children = clientMongo.GetChildrenOperation(params["id"])
+	for _, child := range *operation.Children {
+		if child.SellOrder != nil {
+			child.SellOrder.Profit = utils.GetPercentageBetweenTwoValue(operation.BuyOrder.Price, child.SellOrder.Price)
+			if operation.BuyOrder.Price > child.SellOrder.Price {
+				child.SellOrder.Profit *= -1
+			}
+			child.SellOrder.EuroProfit = utils.GetPercentageBetweenTwoValue(operation.BuyOrder.EuroPrice, child.SellOrder.EuroPrice)
+			if operation.BuyOrder.EuroPrice > child.SellOrder.EuroPrice {
+				child.SellOrder.EuroProfit *= -1
+			}
+		}
+	}
 	json.NewEncoder(response).Encode(*operation)
 }
 

@@ -2,7 +2,7 @@ package model
 
 import (
 	"errors"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/globalsign/mgo/bson"
 	"log"
 )
 
@@ -19,9 +19,9 @@ type Operation struct {
 	SellOrder   *Order        `json:"sell_order"`
 	Currency    *Currency     `json:"currency"`
 	Description string        `json:"description"`
-	ParentId	string		  `json:"parent_id" bson:",omitempty"`
-	Parent 		*Operation 	  `json:"parent,omitempty" bson:"-"`
-	Children	*[]Operation  `json:"children,omitempty" bson:"-"`
+	ParentId    string        `json:"parent_id" bson:",omitempty"`
+	Parent      *Operation    `json:"parent,omitempty" bson:"-"`
+	Children    *[]Operation  `json:"children,omitempty" bson:"-"`
 }
 
 func (operation *Operation) Valid() error {
@@ -35,35 +35,37 @@ func (operation *Operation) Valid() error {
 		return errors.New("Currency is not valid")
 	}
 	if operation.ParentId != "" {
-           log.Println(operation.Parent)
-           if operation.Parent == nil {
-           	return errors.New("ParentId doesn't exist")
-           }
-    }
-    if operation.BuyOrder == nil && operation.SellOrder == nil {
-        return errors.New("You need an order in an operation")
-    }
-    if operation.BuyOrder != nil {
-    	if err := operation.BuyOrder.Valid(); err != nil {
-    		return err
-    	}
-    }
-    if operation.SellOrder != nil {
-    	if err := operation.SellOrder.Valid(); err != nil {
-    		return err
-    	}
-    	if operation.ParentId == "" {
+		log.Println(operation.Parent)
+		if operation.Parent == nil {
+			return errors.New("ParentId doesn't exist")
+		}
+	}
+	if operation.BuyOrder == nil && operation.SellOrder == nil {
+		return errors.New("You need an order in an operation")
+	}
+	if operation.BuyOrder != nil {
+		if err := operation.BuyOrder.Valid(); err != nil {
+			return err
+		}
+	}
+	if operation.SellOrder != nil {
+		if err := operation.SellOrder.Valid(); err != nil {
+			return err
+		}
+		if operation.ParentId == "" {
 			return errors.New("A sell order must have a reference to a parent")
 		}
-    }
-    return nil
+	}
+	return nil
 }
 
 type Order struct {
-	Price     float64    `json:"price"`
-	EuroPrice float64    `json:"euro_price"`
-	Currency  *Currency  `json:"currency"`
-	Date      customTime `json:"date"`
+	Price      float64    `json:"price"`
+	EuroPrice  float64    `json:"euro_price"`
+	Profit     float64    `json:"profit" bson:"-"`
+	EuroProfit float64    `json:"euro_profit" bson:"-"`
+	Currency   *Currency  `json:"currency"`
+	Date       customTime `json:"date"`
 }
 
 func (order *Order) Valid() error {
@@ -73,18 +75,24 @@ func (order *Order) Valid() error {
 	if *order.Currency < Bitcoin || *order.Currency >= End {
 		return errors.New("Currency is not valid")
 	}
+	if order.Price <= 0 {
+		return errors.New("Price must be filled")
+	}
 	if *order.Currency != Euro && order.EuroPrice <= 0 {
 		return errors.New("Euro price must be filled")
+	}
+	if *order.Currency == Euro && order.EuroPrice <= 0 {
+		order.EuroPrice = order.Price
 	}
 	return nil
 }
 
 type Budget struct {
-	Id       		bson.ObjectId 	`json:"id" bson:"_id,omitempty"`
-	Currency 		*Currency     	`json:"currency"`
-	Total    		float64       	`json:"total"`
-	Available   	float64       	`json:"available"`
-	Transactions 	*[]Transaction	`json:"transactions"`
+	Id           bson.ObjectId  `json:"id" bson:"_id,omitempty"`
+	Currency     *Currency      `json:"currency"`
+	Total        float64        `json:"total"`
+	Available    float64        `json:"available"`
+	Transactions *[]Transaction `json:"transactions"`
 }
 
 type Transaction struct {

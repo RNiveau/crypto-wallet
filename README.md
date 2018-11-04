@@ -10,6 +10,9 @@ Ex:
 - 100 for quantity 2 means 1 unit is equal to 50
 - 100 for quantity 0.5 means 1 unit is equal to 200
 
+Euro price for a crypto is the price for the crypto which is use to buy another
+Ex:
+- If I buy 2 ether with 1 bitcoin, euro price is the price of the bitcoin
 
 Operation API:
 --------------
