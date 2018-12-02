@@ -1,6 +1,8 @@
 package client 
 
 import (
+	"fmt"
+	"github.com/rniveau/crypto-wallet/config"
 	"github.com/rniveau/crypto-wallet/model"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
@@ -43,7 +45,7 @@ func GetClient() ClientMongo {
 func (c clientMongo) getSession() *mgo.Session  {
 	if c.session == nil {
 		log.Println("Init session mongodb")
-		c.session, _ = mgo.Dial("localhost")
+		c.session, _ = mgo.Dial(fmt.Sprintf("%s:%s", config.GlobalConfig.Mongo.Host, config.GlobalConfig.Mongo.Port))
 	}
 	return c.session
 }
