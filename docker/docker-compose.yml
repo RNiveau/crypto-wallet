@@ -1,0 +1,14 @@
+version: "3"
+services:
+  api:
+    container_name: api
+    image: rniveau/crypto-wallet:api
+    links:
+      - mongo
+    ports:
+      - 8080:8080
+    volumes:
+      - ./config.yaml:/etc/crypto-wallet/config.yaml
+  mongo:
+    container_name: mongo
+    image: mongo:3.6.7
